@@ -112,8 +112,8 @@ class Parser:
         res_img = self._session.get(self.base_url + img['src'], stream=True)
         if res_img.status_code == 200:
             with open(self.img_dir+'captcha.jpg', 'wb') as f:
-                r.raw.decode_content = True
-                shutil.copyfileobj(r.raw, f) 
+                res_img.raw.decode_content = True
+                shutil.copyfileobj(res_img.raw, f) 
 
         enter_cap = input('Enter captcha: ') # Replace to TG
 
@@ -191,3 +191,9 @@ if __name__ == '__main__':
     #  [with info Example: get 100 pages - 60% -positive 40% negative
     #   60 -positive, ..., size of all grabbed files]
     # get user enter
+
+# ToDo:
+# - создать структуру диплома
+# - протестить данный код с капчей
+# - разделить на классы
+# - добавить: чтобы отправлял капчу в TG и получал ответ

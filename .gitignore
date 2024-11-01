@@ -2,3 +2,4 @@ img/*
 .venv
 captcha_img
 reviews
+**__pycache__
