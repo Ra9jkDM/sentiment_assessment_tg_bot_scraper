@@ -41,7 +41,7 @@ def save_captcha(page, sess):
     r = sess.get(base_url+tags['src'], stream=True)
 
     if r.status_code == 200:
-        with open('c1.jpg', 'wb') as f:
+        with open('img/c1.jpg', 'wb') as f:
             r.raw.decode_content = True
             shutil.copyfileobj(r.raw, f) 
 
