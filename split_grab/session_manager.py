@@ -15,7 +15,7 @@ class SessionManager:
         )
         new_headers = header.generate()
         self._session = requests.Session()
-        self._session.headers.update(new_headers)
+        self._session.headers.update(new_headers) # commit this line and del session.conf? then uncommit to get captha
 
     def dumps(self):
         obj = pickle.dumps(self._session)
