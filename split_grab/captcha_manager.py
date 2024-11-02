@@ -1,8 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
+import glob
 
 from image_saver import ImageSaver
 from tg_manager import TG_manager
+
+def work_status():
+    total  = -1
+    loaded = len(glob.glob('reviews/*'))
+
+    with open('../otzovik.com_urls.txt', 'r') as f:
+        total = len(f.read().split('\n'))
+
+    return f'Загружено: {loaded} из {total}'
 
 class CaptchaManager:
     def __init__(self, session, img_saver, base_url):
@@ -25,7 +35,8 @@ class CaptchaManager:
             img = self._img_saver(f'{self._base_url}{img["src"]}', 'captcha.jpg')
             print(img, type(img))
             # enter_cap = input('Enter captcha: ') # Replace to TG
-            await self._tg.send_question(img.content, 'Введите капчу:')
+            status = work_status()
+            await self._tg.send_question(img.content, f'{status}\nВведите капчу:')
             answer = await self._tg.get_answer()
 
             res = self._send_request(answer, url)
@@ -46,6 +57,7 @@ class CaptchaManager:
             
 
 if __name__ == '__main__':
+    print(work_status())
     session = requests.Session()
     img_s = ImageSaver(session, 'img/')
     base_link = 'https://otzovik.com'

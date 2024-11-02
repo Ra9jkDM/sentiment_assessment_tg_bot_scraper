@@ -25,11 +25,11 @@ class OtzovikParser:
     async def start(self):
         i = self._start_index
 
-        print('Start', i, self._links)
+        # print('Start', i, self._links)
         while i < len(self._links):
-            print('Get page', f'{self._base_link}{self._links[i]}')
+            # print('Get page', f'{self._base_link}{self._links[i]}')
             reviews = await self._get_one_page(f'{self._base_link}{self._links[i]}')
-            print('Success', len(reviews))
+            # print('Success', len(reviews))
             save_review(reviews, i)
             i+=1
             self._save_index(i)
@@ -38,7 +38,7 @@ class OtzovikParser:
         organization_page = await self._get_page(url)
         review_links = self._get_links(organization_page)
         reviews = []
-        print('review_links', len(review_links), review_links)
+        # print('review_links', len(review_links), review_links)
 
         for i in review_links:
             sleep(self._delay)
@@ -49,9 +49,9 @@ class OtzovikParser:
 
     async def _get_page(self, url):
         res = self._session.session.get(url)
-        print('On captha check')
+        # print('On captha check')
         res = await self._pass_captcha(res, url)
-        print('Good html')
+        # print('Good html')
         bs = BeautifulSoup(res.text, 'html.parser')
         return bs
 
@@ -62,7 +62,7 @@ class OtzovikParser:
     def _get_info(self, bs):
         obj = {}
 
-        print('Save i.html')
+        # print('Save i.html')
         with open('i.html', 'w') as f:
             f.write(bs.prettify())
 
@@ -86,9 +86,9 @@ def save_review(reviews, index):
 
 async def main():
     base_link = 'https://otzovik.com'
-    links = ['/reviews/sosh_93_russia_perm/', '/scripts/captcha/index.php?rand=2826178', '/reviews/sosh_93_russia_perm/', '/reviews/eco_ooooo/'] # '/scripts/captcha/index.php?rand=2822125'
-    # with open('otzovik.com_urls.txt', 'r') as f:
-    #     links = f.read().split('\n')
+    # links = ['/reviews/sosh_93_russia_perm/', '/scripts/captcha/index.php?rand=2826178', '/reviews/sosh_93_russia_perm/', '/reviews/eco_ooooo/'] # '/scripts/captcha/index.php?rand=2822125'
+    with open('../otzovik.com_urls.txt', 'r') as f:
+        links = f.read().split('\n')
 
     session = SessionManager()
     config = ConfigManager(session)
