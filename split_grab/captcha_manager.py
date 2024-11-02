@@ -7,7 +7,7 @@ from tg_manager import TG_manager
 
 def work_status():
     total  = -1
-    loaded = len(glob.glob('reviews/*'))
+    loaded = len(glob.glob('reviews/*')) + 6830
 
     with open('../otzovik.com_urls.txt', 'r') as f:
         total = len(f.read().split('\n'))
@@ -28,12 +28,12 @@ class CaptchaManager:
         # print(res.text, self.is_captcha_page(res.text))
         # input('wait')
         while self.is_captcha_page(res.text):
-            print('Found captha')
+            # print('Found captha')
             soup = BeautifulSoup(res.text, "html.parser")
             img = soup.find('img')
 
             img = self._img_saver(f'{self._base_url}{img["src"]}', 'captcha.jpg')
-            print(img, type(img))
+            # print(img, type(img))
             # enter_cap = input('Enter captcha: ') # Replace to TG
             status = work_status()
             await self._tg.send_question(img.content, f'{status}\nВведите капчу:')
