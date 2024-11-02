@@ -3,3 +3,4 @@ img/*
 captcha_img
 reviews
 **__pycache__
+.env
