@@ -4,6 +4,10 @@ import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import BufferedInputFile
 
+import requests
+import shutil
+from image_saver import ImageSaver
+
 API_TOKEN = os.environ.get('TOKEN')
 USER_ID = os.environ.get('USER_ID')
 logging.basicConfig(level=logging.CRITICAL)
@@ -31,10 +35,17 @@ class TG_manager:
 async def main():
     tg = TG_manager()
 
-    with open('../img/c1.jpg', 'rb') as f:
-        photo = f.read()
+    test_link = 'https://img.freepik.com/free-photo/3d-rendering-holographic-cube_23-2150979696.jpg'
+    session = requests.Session()
 
-    await tg.send_question(photo, 'Введите капчу:')
+    # with open('../img/c1.jpg', 'rb') as f:
+    #     photo = f.read()
+
+    s = ImageSaver(session, 'img/')
+    photo = s.save(test_link, 'test.jpg')
+    # print(photo)
+
+    await tg.send_question(photo.content, 'Введите капчу:')
     answer = await tg.get_answer()
     print('Ответ:', answer)
 

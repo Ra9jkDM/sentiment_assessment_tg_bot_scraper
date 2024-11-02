@@ -2,36 +2,45 @@ import requests
 from bs4 import BeautifulSoup
 
 from image_saver import ImageSaver
+from tg_manager import TG_manager
 
 class CaptchaManager:
     def __init__(self, session, img_saver, base_url):
         self._session = session
         self._img_saver = img_saver.save
         self._base_url = base_url
+        self._tg = TG_manager()
 
     def is_captcha_page(self, html):
         return 'Вы робот?' in html
             
-    def pass_captcha(self, html, url):
-        while self.is_captcha_page(html):
-            soup = BeautifulSoup(html, "html.parser")
+    async def pass_captcha(self, res, url):
+        # print(res.text, self.is_captcha_page(res.text))
+        # input('wait')
+        while self.is_captcha_page(res.text):
+            print('Found captha')
+            soup = BeautifulSoup(res.text, "html.parser")
             img = soup.find('img')
 
-            self._img_saver(f'{self._base_url}{img["src"]}', 'captcha.jpg')
+            img = self._img_saver(f'{self._base_url}{img["src"]}', 'captcha.jpg')
+            print(img, type(img))
+            # enter_cap = input('Enter captcha: ') # Replace to TG
+            await self._tg.send_question(img.content, 'Введите капчу:')
+            answer = await self._tg.get_answer()
 
-            enter_cap = input('Enter captcha: ') # Replace to TG
+            res = self._send_request(answer, url)
 
-            self._res = self._send_request(enter_cap, url)
-            html = self._res.text
-
-        return self._res
+        return res
 
     def _send_request(self, captcha, url):
+        url = url[len(self._base_url):]
         params = {'llllllll': captcha, 'submit': captcha, 
                 'captcha_url': url, 
                 'action_capcha_ban': '      Я не робот!     '}
 
-        res = self._session.post(f'{self.base_url}{url}?submit={captcha}', data = params)
+        # print(f'{self._base_url}{url}?submit={captcha}', self._base_url, url)
+        # input('await')
+        res = self._session.post(f'{self._base_url}{url}?submit={captcha}', data = params)
         return res
 
             

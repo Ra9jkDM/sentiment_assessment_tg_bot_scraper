@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 from time import sleep
+import asyncio
+import json
 
 from captcha_manager import CaptchaManager
 from config_manager import ConfigManager
@@ -20,31 +22,36 @@ class OtzovikParser:
         self._save_review = save_review
         self._save_index = save_index
 
-    def start(self):
+    async def start(self):
         i = self._start_index
 
+        print('Start', i, self._links)
         while i < len(self._links):
-            reviews = self._get_one_page(f'{self._base_link}{self._links[i]}')
+            print('Get page', f'{self._base_link}{self._links[i]}')
+            reviews = await self._get_one_page(f'{self._base_link}{self._links[i]}')
+            print('Success', len(reviews))
             save_review(reviews, i)
             i+=1
             self._save_index(i)
 
-    def _get_one_page(self, url):
-        organization_page = self._get_page(url)
+    async def _get_one_page(self, url):
+        organization_page = await self._get_page(url)
         review_links = self._get_links(organization_page)
         reviews = []
+        print('review_links', len(review_links), review_links)
 
         for i in review_links:
             sleep(self._delay)
-            review = self._get_page(f'{self._base_link}{self._links}')
+            review = await self._get_page(f'{self._base_link}{i}')
             info = self._get_info(review)
-            review.append(info)
+            reviews.append(info)
+        return reviews
 
-    def _get_page(self, url):
-        res = self._session.get(url)
-
-        res = self._pass_captcha(res.text, url)
-
+    async def _get_page(self, url):
+        res = self._session.session.get(url)
+        print('On captha check')
+        res = await self._pass_captcha(res, url)
+        print('Good html')
         bs = BeautifulSoup(res.text, 'html.parser')
         return bs
 
@@ -55,6 +62,10 @@ class OtzovikParser:
     def _get_info(self, bs):
         obj = {}
 
+        print('Save i.html')
+        with open('i.html', 'w') as f:
+            f.write(bs.prettify())
+
         worth = bs.find_all('div', attrs={'class': 'review-plus'})
         flaws = bs.find_all('div', attrs={'class': 'review-minus'})
         text = bs.find_all('div', attrs={'class': 'review-body description'})
@@ -62,20 +73,20 @@ class OtzovikParser:
 
         signs = {'plus': worth, 'minus': flaws, 'text': text, 'score': score}
 
-        for key, value in sings.items():
+        for key, value in signs.items():
             if len(value) > 0:
                 obj[key] = value[0].text
 
         return obj
 
 def save_review(reviews, index):
-    with open(f'reviews/{index}', 'a') as f:
+    with open(f'reviews/{index}.json', 'a') as f:
         f.write(json.dumps(reviews))
 
 
-def main():
+async def main():
     base_link = 'https://otzovik.com'
-    links = ['/reviews/logodom/', '/reviews/sosh_93_russia_perm/', '/reviews/eco_ooooo/']
+    links = ['/reviews/sosh_93_russia_perm/', '/scripts/captcha/index.php?rand=2826178', '/reviews/sosh_93_russia_perm/', '/reviews/eco_ooooo/'] # '/scripts/captcha/index.php?rand=2822125'
     # with open('otzovik.com_urls.txt', 'r') as f:
     #     links = f.read().split('\n')
 
@@ -97,10 +108,16 @@ def main():
 
     p = OtzovikParser(session, base_link, links, save_review, config.save_index, 
         cap.pass_captcha, start_index=start_index)
-    p.start()
+    await p.start()
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
+
+    # o = OtzovikParser(None, None, None, None, None, None)
+    # with open('i.html', 'r') as f:
+    #     bs = BeautifulSoup(f.read(), 'html.parser')
+    #     print(o._get_info(bs))
+
 
 # ToDo: add log sys + add tg notification
 
